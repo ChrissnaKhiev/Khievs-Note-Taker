@@ -23,9 +23,36 @@ app.get('/api/notes', (req, res) => {
 });
 
 app.post('/api/notes', (req, res) => {
-    res.json(`${req.method} request received to get reviews`)
+    res.json(`${req.method} request received to get reviews`);
+
+    const { title, text} = req.body;
+
+    if (title && text) {
+        const newNote = {
+            title,
+            text,
+        };
+
+        const noteString = JSON.stringify(newNote);
+
+        fs.writeFile(`./db/${newNote.title}.json`, noteString, (err) => err
+        ? console.error(err)
+        : console.log(
+            `Note for ${newNote.title} has been written to JSON file`)
+        );
+
+        const response = {
+        status: 'success',
+        body: newNote,
+        };
+    
+        console.log(response);
+        res.status(201).json(response);
+    }else {
+        res.status(500).json('Error in posting review');
+    }
 });
 
 app.listen(PORT, () =>
-  console.log(`App listening at http://localhost:${PORT} 🚀`)
+  console.log(`App listening at http://localhost:${PORT}`)
 );
