@@ -2,7 +2,6 @@ const express = require('express');
 const path = require('path');
 const fs = require('fs');
 const uuid = require('./helpers/uuid');
-const notes = require('./db/db.json');
 const PORT = 3001;
 const app = express();
 
@@ -20,7 +19,10 @@ app.get('/notes', (req, res) =>
 );
 
 app.get('/api/notes', (req, res) => {
-    res.json(`${req.method} request received to get notes`)
+    fs.readFile('./db/db.json', 'utf8', (err, data) => {
+      const noteString = JSON.parse(data);
+      res.json(noteString);
+    });
     console.info(`${req.method} request received for notes`);
 });
 
@@ -33,17 +35,15 @@ app.post('/api/notes', (req, res) => {
         const newNote = {
             title,
             text,
-            note_id: uuid(),
+            id: uuid(),
         };
 
         fs.readFile('./db/db.json', 'utf8', (err, data) => {
           if (err) {
             console.error(err);
           } else {
-            // Convert string into JSON object
             const noteString = JSON.parse(data);
     
-            // Add a new review
             noteString.push(newNote);
 
             fs.writeFile(`./db/db.json`, JSON.stringify(noteString, null, 4), (err) => err
@@ -54,7 +54,6 @@ app.post('/api/notes', (req, res) => {
           }
         });
         
-
         const response = {
         status: 'success',
         body: newNote,
@@ -66,6 +65,13 @@ app.post('/api/notes', (req, res) => {
         res.status(500).json('Error in posting note');
     }
 });
+
+app.get('/api/notes/:id', (req, res) =>
+  fs.readFile('./db/db.json', 'utf8', (err, data) => {
+    const noteString = JSON.parse(data);
+    res.json(noteString[req.param.id]);
+  }
+));
 
 app.listen(PORT, () =>
   console.log(`App listening at http://localhost:${PORT}`)
