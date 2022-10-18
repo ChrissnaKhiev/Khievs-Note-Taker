@@ -11,25 +11,6 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use(express.static('public'));
 
-// const writeToFile = (destination, content) => 
-// fs.writeFile(destination, JSON.stringify(content), (err) => err
-// ? console.error(err)
-// : console.log(
-//     `Note for ${newNote.title} has been written to JSON file`)
-// );
-
-// const readAndAppend = (content, file) => {
-//     fs.readFile(file, 'utf8', (err,data) => {
-//         if (err) {
-//             console.log(err);
-//         }else {
-//             const parseData = JSON.parse(data);
-//             parseData.push(content);
-//             writeToFile(file, parseData);
-//         }
-//     })
-// }
-
 app.get('/', (req, res) =>
   res.sendFile(path.join(__dirname, '/public/index.html'))
 );
@@ -56,13 +37,24 @@ app.post('/api/notes', (req, res) => {
             note_id: uuid(),
         };
 
-        const noteString = JSON.stringify(newNote);
+        fs.readFile('./db/db.json', 'utf8', (err, data) => {
+          if (err) {
+            console.error(err);
+          } else {
+            // Convert string into JSON object
+            const noteString = JSON.parse(data);
+    
+            // Add a new review
+            noteString.push(newNote);
 
-        fs.writeFile(`./db/db.json`, noteString, (err) => err
-        ? console.error(err)
-        : console.log(
-            `Note for ${newNote.title} has been written to JSON file`)
-        );
+            fs.writeFile(`./db/db.json`, JSON.stringify(noteString, null, 4), (err) => err
+              ? console.error(err)
+              : console.log(
+                  `Note for ${newNote.title} has been written to JSON file`)
+            );
+          }
+        });
+        
 
         const response = {
         status: 'success',
