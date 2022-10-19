@@ -73,6 +73,20 @@ app.get('/api/notes/:id', (req, res) =>
   }
 ));
 
+app.delete("/api/notes/:id", function(req, res) {
+  fs.readFile('./db/db.json', 'utf8', (err, data) => {
+    const noteString = JSON.parse(data);
+    noteString.splice(req.params.id, 1); //https://stackoverflow.com/questions/65015000/how-do-i-use-express-js-app-delete-to-remove-a-specific-object-from-an-array
+    fs.writeFile(`./db/db.json`, JSON.stringify(noteString, null, 4), (err) => err
+              ? console.error(err)
+              : console.log(
+                  `Deleted note. JSON has been updated.`)
+            );
+    });
+    res.redirect('back'); //https://stackoverflow.com/questions/15825333/how-to-reload-current-page-in-express-js
+  }
+  )
+
 app.listen(PORT, () =>
   console.log(`App listening at http://localhost:${PORT}`)
-);
+)
